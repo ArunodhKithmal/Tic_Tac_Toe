@@ -1,8 +1,6 @@
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'dart:math';
-
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -214,27 +212,48 @@ class _GameScreenState extends State<GameScreen> {
           board[combo[1]][0] == 'X' &&
           board[combo[2]][0] == 'X') {
         setState(() {
-          resultText = 'Player $firstPlayerName (X) wins!';
+          resultText = "congratulations! 🎉 \n$firstPlayerName \nyou win!";
           gameOver = true;
           if (gameMode != 'multiplayer') {
             wins++;
             saveStats();
           }
         });
+        Future.delayed(Duration(milliseconds: 500), () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  VictoryScreen(winnerText: resultText, isPlayerWin: true),
+            ),
+          );
+        });
+
         return;
       } else if (board[combo[0]][0] == 'O' &&
           board[combo[1]][0] == 'O' &&
           board[combo[2]][0] == 'O') {
         setState(() {
           resultText = gameMode == 'multiplayer'
-              ? 'Player $secondPlayerName (O) wins!'
-              : 'Computer (O) wins!';
+              ? 'congratulations! 🎉 \n$secondPlayerName \nyou win!'
+              : '😞 Bad luck! You lost.\nTry again next time!';
           gameOver = true;
           if (gameMode != 'multiplayer') {
             losses++;
             saveStats();
           }
         });
+
+        Future.delayed(Duration(milliseconds: 500), () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  VictoryScreen(winnerText: resultText, isPlayerWin: true),
+            ),
+          );
+        });
+
         return;
       }
     }
@@ -959,6 +978,72 @@ class _GameScreenState extends State<GameScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class VictoryScreen extends StatelessWidget {
+  final String winnerText;
+  final bool isPlayerWin; // New flag
+
+  const VictoryScreen({
+    super.key,
+    required this.winnerText,
+    required this.isPlayerWin,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 12, 44, 70).withOpacity(0.85),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TweenAnimationBuilder(
+              tween: Tween<double>(begin: 0, end: 1),
+              duration: Duration(seconds: 2),
+              builder: (context, value, child) {
+                return Transform.scale(scale: value, child: child);
+              },
+              child: Icon(
+                isPlayerWin
+                    ? Icons.emoji_events
+                    : Icons.sentiment_very_dissatisfied,
+                size: 100,
+                color: isPlayerWin ? Colors.amberAccent : Colors.redAccent,
+              ),
+            ),
+            SizedBox(height: 20),
+            Text(
+              isPlayerWin
+                  ? winnerText
+                  : "😞 Oh no!.\nYou’ve got this next round!",
+              style: TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                fontFamily: 'PlayfairDisplay',
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 30),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color.fromARGB(255, 185, 201, 231),
+                padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+              ),
+              child: Text(
+                'Back to Game',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
