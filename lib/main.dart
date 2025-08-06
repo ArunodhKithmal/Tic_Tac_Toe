@@ -212,7 +212,7 @@ class _GameScreenState extends State<GameScreen> {
           board[combo[1]][0] == 'X' &&
           board[combo[2]][0] == 'X') {
         setState(() {
-          resultText = "congratulations! 🎉 \n$firstPlayerName \nyou win!";
+          resultText = "congratulations!🎉 $firstPlayerName \nYou win!";
           gameOver = true;
           if (gameMode != 'multiplayer') {
             wins++;
@@ -223,8 +223,14 @@ class _GameScreenState extends State<GameScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) =>
-                  VictoryScreen(winnerText: resultText, isPlayerWin: true),
+              builder: (context) => VictoryScreen(
+                winnerText: resultText,
+                isPlayerWin: true, // or false
+                isDraw: false, // only if draw
+                wins: wins,
+                losses: losses,
+                draws: draws,
+              ),
             ),
           );
         });
@@ -235,7 +241,7 @@ class _GameScreenState extends State<GameScreen> {
           board[combo[2]][0] == 'O') {
         setState(() {
           resultText = gameMode == 'multiplayer'
-              ? 'congratulations! 🎉 \n$secondPlayerName \nyou win!'
+              ? 'congratulations!🎉 $secondPlayerName \nYou win!'
               : '😞 Bad luck! You lost.\nTry again next time!';
           gameOver = true;
           if (gameMode != 'multiplayer') {
@@ -248,8 +254,16 @@ class _GameScreenState extends State<GameScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) =>
-                  VictoryScreen(winnerText: resultText, isPlayerWin: true),
+              builder: (context) => VictoryScreen(
+                winnerText: resultText,
+                isPlayerWin: gameMode == 'multiplayer'
+                    ? true
+                    : false, // or false
+                isDraw: false, // only if draw
+                wins: wins,
+                losses: losses,
+                draws: draws,
+              ),
             ),
           );
         });
@@ -266,6 +280,21 @@ class _GameScreenState extends State<GameScreen> {
           draws++;
           saveStats();
         }
+      });
+      Future.delayed(Duration(milliseconds: 500), () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => VictoryScreen(
+              winnerText: resultText,
+              isPlayerWin: true, // or false
+              isDraw: true, // only if draw
+              wins: wins,
+              losses: losses,
+              draws: draws, // 🎯 Add this
+            ),
+          ),
+        );
       });
     }
   }
@@ -710,7 +739,7 @@ class _GameScreenState extends State<GameScreen> {
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 90,
-        backgroundColor: const Color.fromARGB(255, 59, 83, 128),
+        backgroundColor: const Color.fromARGB(255, 12, 44, 70),
         centerTitle: true,
         title: Text(
           'Tic Tac Toe',
@@ -857,7 +886,7 @@ class _GameScreenState extends State<GameScreen> {
                       ),
                     ),
                   ),
-                  if (gameOver)
+                  if (gameOver) ...[
                     Text(
                       resultText,
                       style: TextStyle(
@@ -866,6 +895,18 @@ class _GameScreenState extends State<GameScreen> {
                         color: Colors.yellowAccent,
                       ),
                     ),
+                    SizedBox(height: 10),
+                    Text(
+                      'Wins: $wins   |   Losses: $losses   |   Draws: $draws',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+
                   Visibility(
                     visible: hasFirstMove && !gameOver,
                     child: Container(
@@ -985,12 +1026,21 @@ class _GameScreenState extends State<GameScreen> {
 
 class VictoryScreen extends StatelessWidget {
   final String winnerText;
-  final bool isPlayerWin; // New flag
+  final bool isPlayerWin;
+  final bool isDraw;
+  final int wins;
+  final int losses;
+  final int draws;
+  // New flag
 
   const VictoryScreen({
     super.key,
     required this.winnerText,
     required this.isPlayerWin,
+    required this.wins,
+    required this.losses,
+    required this.draws,
+    this.isDraw = false,
   });
 
   @override
@@ -1007,19 +1057,28 @@ class VictoryScreen extends StatelessWidget {
               builder: (context, value, child) {
                 return Transform.scale(scale: value, child: child);
               },
+
               child: Icon(
-                isPlayerWin
+                isDraw
+                    ? Icons.handshake
+                    : isPlayerWin
                     ? Icons.emoji_events
                     : Icons.sentiment_very_dissatisfied,
                 size: 100,
-                color: isPlayerWin ? Colors.amberAccent : Colors.redAccent,
+                color: isDraw
+                    ? Colors.orangeAccent
+                    : isPlayerWin
+                    ? Colors.amberAccent
+                    : Colors.redAccent,
               ),
             ),
             SizedBox(height: 20),
             Text(
-              isPlayerWin
+              isDraw
+                  ? "🤝 It's a draw!\nWell played both!"
+                  : isPlayerWin
                   ? winnerText
-                  : "😞 Oh no!.\nYou’ve got this next round!",
+                  : "😞 Oh no!\nYou’ve got this next round!",
               style: TextStyle(
                 fontSize: 26,
                 fontWeight: FontWeight.bold,
@@ -1028,7 +1087,19 @@ class VictoryScreen extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 30),
+            SizedBox(height: 20), // ⬅ spacing before stats
+            Text(
+              'Wins: $wins   |   Losses: $losses   |   Draws: $draws',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                fontFamily: 'PlayfairDisplay',
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 30), // ⬅ spacing before button
+
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(context);
