@@ -212,7 +212,7 @@ class _GameScreenState extends State<GameScreen> {
           board[combo[1]][0] == 'X' &&
           board[combo[2]][0] == 'X') {
         setState(() {
-          resultText = "congratulations!🎉 $firstPlayerName \nYou win!";
+          resultText = "Congratulations!🎉 $firstPlayerName \nYou win!";
           gameOver = true;
           if (gameMode != 'multiplayer') {
             wins++;
@@ -220,6 +220,7 @@ class _GameScreenState extends State<GameScreen> {
           }
         });
         Future.delayed(Duration(milliseconds: 500), () {
+          if (!mounted) return;
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -230,6 +231,7 @@ class _GameScreenState extends State<GameScreen> {
                 wins: wins,
                 losses: losses,
                 draws: draws,
+                isMultiplayer: gameMode == 'multiplayer',
               ),
             ),
           );
@@ -241,8 +243,8 @@ class _GameScreenState extends State<GameScreen> {
           board[combo[2]][0] == 'O') {
         setState(() {
           resultText = gameMode == 'multiplayer'
-              ? 'congratulations!🎉 $secondPlayerName \nYou win!'
-              : '😞 Bad luck! You lost.\nTry again next time!';
+              ? 'Congratulations!🎉 $secondPlayerName \nYou win!'
+              : '😞You lost!.\nTry again next time!';
           gameOver = true;
           if (gameMode != 'multiplayer') {
             losses++;
@@ -251,6 +253,7 @@ class _GameScreenState extends State<GameScreen> {
         });
 
         Future.delayed(Duration(milliseconds: 500), () {
+          if (!mounted) return;
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -263,6 +266,7 @@ class _GameScreenState extends State<GameScreen> {
                 wins: wins,
                 losses: losses,
                 draws: draws,
+                isMultiplayer: gameMode == 'multiplayer',
               ),
             ),
           );
@@ -274,7 +278,7 @@ class _GameScreenState extends State<GameScreen> {
 
     if (getEmptyCells().isEmpty) {
       setState(() {
-        resultText = "It's a tie!";
+        resultText = "It's a tie!🤝";
         gameOver = true;
         if (gameMode != 'multiplayer') {
           draws++;
@@ -282,6 +286,7 @@ class _GameScreenState extends State<GameScreen> {
         }
       });
       Future.delayed(Duration(milliseconds: 500), () {
+        if (!mounted) return;
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -291,7 +296,8 @@ class _GameScreenState extends State<GameScreen> {
               isDraw: true, // only if draw
               wins: wins,
               losses: losses,
-              draws: draws, // 🎯 Add this
+              draws: draws,
+              isMultiplayer: gameMode == 'multiplayer',
             ),
           ),
         );
@@ -764,7 +770,9 @@ class _GameScreenState extends State<GameScreen> {
           BackdropFilter(
             filter: ImageFilter.blur(), // Adjust blur here
             child: Container(
-              color: Colors.black.withOpacity(0.2), // Transparent overlay
+              color: Colors.black.withAlpha(
+                (0.2 * 255).toInt(),
+              ), // Transparent overlay
             ),
           ),
           Center(
@@ -810,10 +818,10 @@ class _GameScreenState extends State<GameScreen> {
                   if (gameStarted && !gameOver && gameMode != 'multiplayer')
                     Container(
                       margin: const EdgeInsets.symmetric(
-                        vertical: 10.0,
+                        vertical: 5.0,
                         horizontal: 20.0,
                       ),
-                      padding: const EdgeInsets.all(12.0),
+                      padding: const EdgeInsets.all(9.0),
                       decoration: BoxDecoration(
                         color: const Color.fromARGB(
                           255,
@@ -828,7 +836,7 @@ class _GameScreenState extends State<GameScreen> {
                         'Wins: $wins   |   Losses: $losses   |   Draws: $draws',
                         textAlign: TextAlign.center,
                         style: const TextStyle(
-                          fontSize: 18,
+                          fontSize: 15,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
@@ -889,22 +897,47 @@ class _GameScreenState extends State<GameScreen> {
                   if (gameOver) ...[
                     Text(
                       resultText,
+                      textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 24,
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
-                        color: Colors.yellowAccent,
+                        color: const Color.fromARGB(255, 40, 60, 90),
+                        fontFamily: 'PlayfairDisplay',
                       ),
                     ),
                     SizedBox(height: 10),
-                    Text(
-                      'Wins: $wins   |   Losses: $losses   |   Draws: $draws',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+
+                    if (gameMode != 'multiplayer')
+                      Container(
+                        margin: EdgeInsets.symmetric(
+                          vertical: 1.0,
+                          horizontal: 20.0,
+                        ),
+                        padding: EdgeInsets.all(9.0),
+                        decoration: BoxDecoration(
+                          color: const Color.fromARGB(
+                            255,
+                            40,
+                            60,
+                            90,
+                          ), // background color
+                          borderRadius: BorderRadius.circular(12.0),
+                          border: Border.all(
+                            color: Colors.white,
+                            width: 2.0,
+                          ), // border
+                        ),
+                        child: Text(
+                          'Wins: $wins   |   Losses: $losses   |   Draws: $draws',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            fontFamily: 'PlayfairDisplay',
+                          ),
+                        ),
                       ),
-                      textAlign: TextAlign.center,
-                    ),
                   ],
 
                   Visibility(
@@ -934,7 +967,7 @@ class _GameScreenState extends State<GameScreen> {
                           ),
                           foregroundColor: Colors.white,
                           padding: EdgeInsets.symmetric(
-                            horizontal: 25,
+                            horizontal: 20,
                             vertical: 10,
                           ),
                           shape: RoundedRectangleBorder(
@@ -952,15 +985,15 @@ class _GameScreenState extends State<GameScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(height: 20),
+                  SizedBox(height: 10),
                   Visibility(
                     visible: gameOver && hasFirstMove,
                     child: ElevatedButton(
                       onPressed: () => resetBoard(),
                       style: ElevatedButton.styleFrom(
                         padding: EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 16,
+                          horizontal: 20,
+                          vertical: 12,
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
@@ -996,8 +1029,8 @@ class _GameScreenState extends State<GameScreen> {
                           ),
                           foregroundColor: Colors.white,
                           padding: EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 16,
+                            horizontal: 20,
+                            vertical: 12,
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
@@ -1025,6 +1058,7 @@ class _GameScreenState extends State<GameScreen> {
 }
 
 class VictoryScreen extends StatelessWidget {
+  final bool isMultiplayer;
   final String winnerText;
   final bool isPlayerWin;
   final bool isDraw;
@@ -1041,12 +1075,13 @@ class VictoryScreen extends StatelessWidget {
     required this.losses,
     required this.draws,
     this.isDraw = false,
+    this.isMultiplayer = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 12, 44, 70).withOpacity(0.85),
+      backgroundColor: const Color.fromARGB(217, 12, 44, 70),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -1088,16 +1123,17 @@ class VictoryScreen extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 20), // ⬅ spacing before stats
-            Text(
-              'Wins: $wins   |   Losses: $losses   |   Draws: $draws',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                fontFamily: 'PlayfairDisplay',
+            if (!isMultiplayer)
+              Text(
+                'Wins: $wins   |   Losses: $losses   |   Draws: $draws',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  fontFamily: 'PlayfairDisplay',
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
-            ),
             SizedBox(height: 30), // ⬅ spacing before button
 
             ElevatedButton(
