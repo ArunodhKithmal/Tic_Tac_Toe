@@ -20,7 +20,8 @@ class GameStats {
       GameStats(wins: wins + 1, losses: losses, draws: draws);
   GameStats incLosses() =>
       GameStats(wins: wins, losses: losses + 1, draws: draws);
-  GameStats incDraws() => GameStats(wins: wins, losses: losses, draws: draws);
+  GameStats incDraws() =>
+      GameStats(wins: wins, losses: losses, draws: draws + 1);
 }
 
 typedef Board = List<String>;
