@@ -15,7 +15,10 @@ class NoughtsAndCrosses extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (_) => GameController(),
       child: MaterialApp(
-        theme: ThemeData(primarySwatch: Colors.teal),
+        theme: ThemeData(
+          primarySwatch: Colors.teal,
+          fontFamily: 'PlayfairDisplay',
+        ),
         home: const LandingScreen(),
       ),
     );
