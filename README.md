@@ -1,4 +1,4 @@
-﻿# # Tic Tac Toe (Flutter)
+# # Tic Tac Toe (Flutter)
 
 A polished Tic Tac Toe game built with Flutter and Provider.
 
@@ -6,9 +6,9 @@ A polished Tic Tac Toe game built with Flutter and Provider.
 
 - [x] Flutter scaffold
 - [x] Domain models
-- [ ] Game rules & AI (easy/medium/hard)
-- [ ] State controller
-- [ ] UI screens (landing, game, victory)
-- [ ] Persistence (wins/losses/draws)
-- [ ] Assets & theme polish
-- [ ] Tests
+- [x] Game rules & AI (easy/medium/hard)
+- [x] State controller
+- [x] UI screens (landing, game, victory)
+- [x] Persistence (wins/losses/draws)
+- [x] Assets & theme polish
+- [x] Tests
